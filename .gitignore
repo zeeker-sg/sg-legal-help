@@ -1,0 +1,21 @@
+# Generated database
+*.db
+*.previous.db
+
+# Build cache (markers, HTML/extraction caches)
+.cache/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.env
+
+# Data files (uncomment if you want to ignore data directory)
+# data/
+# raw/
+
+# OS
+.DS_Store
+Thumbs.db

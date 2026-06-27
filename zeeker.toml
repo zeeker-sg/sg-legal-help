@@ -1,0 +1,51 @@
+[project]
+name = "sg-legal-help"
+database = "sg-legal-help.db"
+title = "SG Legal Help"
+description = "Curated, plain-language Singapore consumer/SME legal-help resources — official guidance, how-to explainers, and where-to-go routing — indexed for the harry assistant. Data licence is MIXED and recorded per row; code is MIT."
+# Data licence is per-source (recorded on each row's license/license_url/attribution columns).
+# The project-level fields below describe the repository default, not any single source.
+license = "Mixed (per-source; see each row)"
+license_url = "https://data.zeeker.sg"
+source = "Curated Singapore legal-help resources"
+source_url = "https://data.zeeker.sg"
+
+[resource.resources]
+description = "Curated plain-language Singapore legal-help resources (routing, how-to, rights explainers) with section-level fragments"
+facets = ["topic", "audience", "resource_kind", "status"]
+sort = "last_checked desc"
+size = 25
+fragments = true
+fts_fields = ["title", "summary", "content_text"]
+fragments_fts_fields = ["content_text", "heading"]
+
+[resource.resources.columns]
+# Identity
+id = "Opaque stable identifier (SHA-256 of the normalised source URL, first 12 hex chars)"
+source_url = "Canonical URL of the source page (the catalogue is keyed on this)"
+# Source metadata
+title = "Title of the guide / scheme / page, from the source"
+publisher = "Publishing body, e.g. 'LawGoWhere' / 'Pro Bono SG'"
+publisher_type = "Kind of publisher: ministry / statutory_board / court / a2j_body / sector_regulator / ngo"
+source_last_updated = "The page's own stated last-updated date, if any (ISO 8601 or source text)"
+# Curation (controlled vocabulary)
+topic = "Controlled-vocabulary topic, e.g. access_to_justice / consumer / employment / housing / family / money"
+audience = "Who this is for: individual / sme / both"
+resource_kind = "rights_explainer / how_to / process_steps / faq / contact_directory / form / calculator"
+# Routing
+is_routing_destination = "1 if this is an official 'where to go / who to contact' endpoint (escalation map), else 0"
+# Content
+summary = "AI-generated ~100-word plain-language summary — the safe-to-serve display + grounding field"
+content_text = "Full extracted page text, indexed for search but NOT served where licensing requires (see can_store_fulltext)"
+# Licensing / provenance
+license = "Licence of this row's source content (e.g. 'All rights reserved', 'Singapore Open Data Licence', 'CC-BY-4.0')"
+license_url = "URL of the licence / terms of use governing this source"
+attribution = "Required attribution string for this source"
+can_store_fulltext = "1 if the source permits redistributing full text; 0 = serve only summary + link"
+# Freshness / housekeeping
+source_method = "How the row was obtained: crawled / manual"
+volatility = "Re-check cadence tier: 1 (structural, least often) / 2 (numbers move — weekly) / 3 (default monthly)"
+last_checked = "ISO 8601 timestamp of the last successful re-fetch / liveness check"
+content_hash = "SHA-256 over normalised content_text, for change detection between runs"
+status = "active / superseded / dead_link — retrieval filters to active"
+created_at = "ISO 8601 timestamp when the row was first inserted"
