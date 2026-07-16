@@ -21,16 +21,14 @@ Server-rendered WordPress (Elementor); httpx + BeautifulSoup. All-rights-reserve
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 from typing import Dict, List, Optional
 
 import click
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-import http_client  # noqa: E402
-from sources import _common  # noqa: E402
+# Sibling modules resolve because zeeker (>= 0.9.0) puts the resources/ dir on
+# sys.path while the resource module loads — top-level imports only.
+import http_client
+from sources import _common
 
 BASE = "https://www.probono.sg"
 CACHE_SUBDIR = "probono_html"
