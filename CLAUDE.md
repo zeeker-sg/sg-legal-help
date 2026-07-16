@@ -27,23 +27,30 @@ rights explainers) published as a Zeeker data source and consumed by the harry a
 - **Helpers** (`resources/`): `ids.py` (opaque SHA-256 ids + URL normalisation), `http_client.py`
   (polite client: UA, delay+jitter, tenacity backoff floored at the delay, circuit breaker, atomic
   `.cache/` writes), `summary.py` (OpenAI-compatible summaries, graceful skip), `build_state.py`
-  (build DB handle + per-build marker).
+  (build DB handle for schema pre-creation).
 
-## Zeeker build-loop pitfalls (already handled — keep them intact)
+## Zeeker build-loop notes (requires zeeker >= 0.9.0 — keep them intact)
 
-- **`fetch_data` runs more than once per build.** Zeeker reloads the module and calls `fetch_data`
-  a second time in the fragments phase to rebuild `main_data_context`. A per-build marker
-  (`.cache/sg_legal_help_build_marker.json`, fresh < 6h) makes that second call a no-op so the
-  crawl runs ONCE. Fragments do NOT use `main_data_context` — `fetch_fragments_data` reads the
-  on-disk cache (`.cache/sg_legal_help_fragments.json`) the first `fetch_data` wrote.
+- **Single-fetch lifecycle.** zeeker 0.9.0 loads the resource module ONCE per build and calls
+  `fetch_data` ONCE (no reload between the main and fragments phases). The fragments bridge is
+  the in-memory module global `_pending_fragment_pages` — the pre-0.9.0 per-build marker and
+  fragments disk cache are GONE; do not reintroduce them. Crash recovery is `--sync-from-s3`
+  (an undeployed partial build is discarded and re-crawled next run).
 - **First build has no tables / unique indexes.** `ensure_schema()` pre-creates both tables + the
   unique-index tripwires up front (zeeker only creates tables from returned rows *after* the
-  resource runs).
-- **Resource modules load by file path**, not as a package. Sibling imports use the
-  `sys.path.insert(0, parent)` shim + bare `import` (see top of `resources.py` / `lawgowhere.py`).
-
-> Dev note: the 6h build marker suppresses re-crawls. To force a fresh crawl during development,
-> delete `.cache/` (or just the marker + fragments cache) before rebuilding.
+  resource runs). Preserve this and the tripwires.
+- **Sibling imports must stay top-level.** zeeker puts `resources/` on `sys.path` ONLY while the
+  resource module loads — the old `sys.path.insert` shims were removed, and any lazy in-function
+  import of a sibling module would fail at call time. Ruff knows the siblings as first-party
+  (`[tool.ruff.lint.isort] known-first-party` in pyproject.toml).
+- **Skip semantics.** `fetch_data` raises `Skip(kind="blocked")` only when EVERY adapter raises
+  (total outage — the freshness marker must not advance). Partial adapter failure continues with
+  the healthy adapters' rows.
+- **`__zeeker_report__` counters** (`pages_crawled`, `new_rows`, `unchanged`, `adapters_failed`,
+  optional `notes`) surface on the build status line and in `--json` — keep them accurate when
+  touching `fetch_data`.
+- **`fragments_on_skip` stays UNSET in zeeker.toml** — see RUNBOOK.md ("What happens during a
+  run") for the unique-index rationale.
 
 ## Build / refresh / deploy
 
@@ -58,6 +65,11 @@ scripts/nightly.sh --deploy     # ... -> zeeker deploy (S3, data.zeeker.sg)
 `scripts/sanity_checks.py` gates the deploy: append-mostly row count on `resources`
 (fragments exempt), no orphan fragments, no empty active rows, unique-index tripwires intact.
 Any non-zero exit blocks deploy.
+
+**Operations & monitoring live in `RUNBOOK.md`** — run narrative, healthy-log examples,
+zeeker 0.9.0 status contract (Skip kinds, report counters, exit codes), cadence/yield
+expectations, failure modes + recovery, and backlog SQL. This file keeps only what a
+developer changing code needs.
 
 **Cadence:** LawGoWhere explainers/schemes are low-volatility — **Tier 3 (monthly)**
 re-check (per-row `volatility = 3`). No source ToU extraction window; no robots.txt (the site

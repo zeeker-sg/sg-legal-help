@@ -172,7 +172,7 @@ sg-legal-help/
 │   ├── ids.py                # opaque ids + URL normalisation
 │   ├── http_client.py        # polite client (delay/jitter/retry/circuit breaker)
 │   ├── summary.py            # AI summaries (graceful skip)
-│   ├── build_state.py        # build-DB handle + per-build marker
+│   ├── build_state.py        # build-DB handle (schema pre-creation)
 │   └── sources/              # one adapter per source
 │       ├── _common.py        # shared extraction helpers (newer adapters)
 │       ├── lawgowhere.py     # LawGoWhere (live)

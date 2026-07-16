@@ -19,16 +19,15 @@ from __future__ import annotations
 import hashlib
 import os
 import re
-import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
 
 import click
 from bs4 import BeautifulSoup, NavigableString
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-import http_client  # noqa: E402
+# Sibling modules resolve because zeeker (>= 0.9.0) puts the resources/ dir on
+# sys.path while the resource module loads — top-level imports only.
+import http_client
 
 # Chrome that repeats site-wide on most CMS themes. Adapters pass extra,
 # source-specific selectors (sidebars, mega-menus, signup forms).

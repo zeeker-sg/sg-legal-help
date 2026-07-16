@@ -33,7 +33,6 @@ from __future__ import annotations
 
 import os
 import re
-import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 from urllib.parse import urljoin, urlsplit
@@ -41,11 +40,9 @@ from urllib.parse import urljoin, urlsplit
 import click
 from bs4 import BeautifulSoup
 
-# Sibling modules live in resources/ (one dir up); zeeker loads by file path so
-# add it to sys.path for a bare import.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-import http_client  # noqa: E402
+# Sibling modules resolve because zeeker (>= 0.9.0) puts the resources/ dir on
+# sys.path while the resource module loads — top-level imports only.
+import http_client
 
 BASE = "https://lawgowhere.sg"
 HOST = "lawgowhere.sg"
