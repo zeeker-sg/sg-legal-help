@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+
+  push:
+    branches: [main]
+
+# Least privilege: read-only access to the repo so actions/checkout can fetch
+# it (a fully empty token cannot read this private repository). No write
+# scopes are granted.
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3.2.4
+        with:
+          version: "0.11.14"
+
+      - name: Verify the committed lockfile satisfies pyproject.toml
+        run: uv lock --locked
+
+      - name: Install the locked environment
+        run: uv sync --locked
+
+      - name: Run the smoke suite
+        run: uv run pytest tests/test_smoke.py -vv
