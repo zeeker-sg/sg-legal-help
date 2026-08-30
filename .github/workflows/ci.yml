@@ -6,7 +6,11 @@ on:
   push:
     branches: [main]
 
-permissions: {}
+# Least privilege: read-only access to the repo so actions/checkout can fetch
+# it (a fully empty token cannot read this private repository). No write
+# scopes are granted.
+permissions:
+  contents: read
 
 jobs:
   smoke:
