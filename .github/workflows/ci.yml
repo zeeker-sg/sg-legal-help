@@ -37,5 +37,5 @@ jobs:
       - name: Install the locked environment
         run: uv sync --locked
 
-      - name: Run the smoke suite
-        run: uv run pytest tests/test_smoke.py -vv
+      - name: Run the offline test suite
+        run: uv run pytest tests -vv
